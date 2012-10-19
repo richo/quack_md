@@ -26,29 +26,35 @@ func main() {
     port, err := strconv.Atoi(parts[1])
     checkError(err)
 
-    if isUp(host, port) {
-        fmt.Fprintf(os.Stderr, "%s is UP", service)
-    } else {
-        fmt.Fprintf(os.Stderr, "%s is DOWN", service)
-        os.Exit(1)
-    }
+    isUp(host, port)
+
     os.Exit(0)
 }
 
-func isUp(host string, port int) bool {
+func isUp(host string, port int) {
     service := fmt.Sprintf("%s:%d", host, port)
 
     conn, err := net.DialTimeout("tcp", service, TIMEOUT)
     if err != nil {
-        return false
+        hostIsDown(service)
+        return
     }
 
     _, err = conn.Write([]byte("0x00"))
     if err != nil {
-        return false
+        hostIsDown(service)
+        return
     }
 
-    return true
+    hostIsUp(service)
+}
+
+func hostIsUp(service string) {
+    fmt.Fprintf(os.Stderr, "%s is UP\n", service)
+}
+
+func hostIsDown(service string) {
+    fmt.Fprintf(os.Stderr, "%s is DOWN\n", service)
 }
 
 func checkError(err error) {
