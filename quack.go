@@ -19,18 +19,23 @@ func main() {
     }
 
     finished := make(chan int)
+    concurrency := 0
 
     for _,service := range os.Args[1:] {
         parts := strings.SplitN(service, ":", 2)
 
         host := parts[0]
         port, err := strconv.Atoi(parts[1])
-        checkError(err)
+        if err != nil {
+            fmt.Fprintf(os.Stderr, "Ignoring invalid service: %s\n", service)
+            continue
+        }
 
+        concurrency++
         go isUp(host, port, finished)
     }
 
-    for i :=  0; i < len(os.Args)-1; _, i = <- finished, i+1 { }
+    for i :=  0; i < concurrency; _, i = <- finished, i+1 { }
 
     os.Exit(0)
 }
