@@ -66,11 +66,11 @@ func isUp(host string, port int, done chan int) {
 }
 
 func hostIsUp(service string) {
-    fmt.Fprintf(os.Stderr, "%s is UP\n", service)
+    fmt.Fprintf(os.Stdout, "%s is UP\n", service)
 }
 
 func hostIsDown(service string) {
-    fmt.Fprintf(os.Stderr, "%s is DOWN\n", service)
+    fmt.Fprintf(os.Stdout, "%s is DOWN\n", service)
 }
 
 func checkError(err error) {
