@@ -18,6 +18,8 @@ func main() {
         os.Exit(1)
     }
 
+    finished := make(chan int)
+
     for _,service := range os.Args[1:] {
         parts := strings.SplitN(service, ":", 2)
 
@@ -25,28 +27,37 @@ func main() {
         port, err := strconv.Atoi(parts[1])
         checkError(err)
 
-        isUp(host, port)
+        go isUp(host, port, finished)
     }
+
+    for i :=  0; i < len(os.Args)-1; _, i = <- finished, i+1 { }
 
     os.Exit(0)
 }
 
-func isUp(host string, port int) {
+func isUp(host string, port int, done chan int) {
     service := fmt.Sprintf("%s:%d", host, port)
 
     conn, err := net.DialTimeout("tcp", service, TIMEOUT)
     if err != nil {
-        hostIsDown(service)
-        return
+        goto ERROR
     }
 
     _, err = conn.Write([]byte("0x00"))
     if err != nil {
-        hostIsDown(service)
-        return
+        goto ERROR
     }
 
     hostIsUp(service)
+    goto FINAL
+
+
+    ERROR:
+        hostIsDown(service)
+
+    FINAL:
+        done <- 1
+
 }
 
 func hostIsUp(service string) {
