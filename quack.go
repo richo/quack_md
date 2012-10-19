@@ -13,20 +13,20 @@ const TIMEOUT = time.Duration(2) * time.Second
 
 func main() {
 
-    if len(os.Args) != 2 {
-        fmt.Fprintf(os.Stderr, "Usage: %s host:port ", os.Args[0])
+    if len(os.Args) == 1 {
+        fmt.Fprintf(os.Stderr, "Usage: %s host:port [host:port ...]", os.Args[0])
         os.Exit(1)
     }
 
-    service := os.Args[1]
+    for _,service := range os.Args[1:] {
+        parts := strings.SplitN(service, ":", 2)
 
-    parts := strings.SplitN(service, ":", 2)
+        host := parts[0]
+        port, err := strconv.Atoi(parts[1])
+        checkError(err)
 
-    host := parts[0]
-    port, err := strconv.Atoi(parts[1])
-    checkError(err)
-
-    isUp(host, port)
+        isUp(host, port)
+    }
 
     os.Exit(0)
 }
